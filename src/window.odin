@@ -1,6 +1,7 @@
 package lvo
 
 import "vendor:glfw"
+import glfwb "vendor:glfw/bindings"
 import gl "vendor:OpenGL"
 import "core:fmt"
 import "core:os"
@@ -31,9 +32,16 @@ LVO_Window :: struct {
 	shader: LVO_Shader,
 }
 
+cursor_captured := false
+
+key_callback :: proc "c" (window: glfw.WindowHandle, key, scancode, action, mods: i32) {
+	if key == glfw.KEY_ESCAPE && action == glfw.PRESS {
+		cursor_captured = !cursor_captured
+	}
+}
+
 init_lvo_textures :: proc(texture_pack: string) {
 	TEXTURE_MANAGER = create_lvo_texture_manager(16, 16, 256, texture_pack)
-
 
 	BT_LOG = create_lvo_block_type(
 		"log",
@@ -77,6 +85,8 @@ create_lvo_window :: proc(width, height: int, title: string) -> LVO_Window {
 		nil,
 	)
 
+	glfw.SetInputMode(window, glfw.CURSOR_HIDDEN, 1)
+
 	glfw.MakeContextCurrent(window)
 
 	gl.load_up_to(4, 1, glfw.gl_set_proc_address)
@@ -84,6 +94,17 @@ create_lvo_window :: proc(width, height: int, title: string) -> LVO_Window {
 	init_lvo_textures("default")
 
 	gl.Viewport(0, 0, i32(width), i32(height))
+
+	glfw.SetKeyCallback(window, key_callback)
+
+	if !glfwb.RawMouseMotionSupported() {
+		fmt.panicf("Raw mouse motion is not supported!")
+	} else {
+		fmt.println("[LVO] Using raw mouse motion")
+	}
+
+
+	cursor_captured = true
 
 	gl.Enable(gl.MULTISAMPLE)
 	gl.Enable(gl.DEPTH_TEST)
@@ -109,8 +130,8 @@ create_lvo_window :: proc(width, height: int, title: string) -> LVO_Window {
 	gl.BindBuffer(gl.ARRAY_BUFFER, tbo)
 	gl.BufferData(
 		gl.ARRAY_BUFFER,
-		len(BT_GRASS.tex_coords) * size_of(BT_GRASS.tex_coords[0]),
-		&BT_GRASS.tex_coords[0],
+		len(BT_LOG.tex_coords) * size_of(BT_LOG.tex_coords[0]),
+		&BT_LOG.tex_coords[0],
 		gl.STATIC_DRAW,
 	)
 	gl.VertexAttribPointer(1, 3, gl.FLOAT, false, 0, 0)
@@ -142,6 +163,11 @@ create_lvo_window :: proc(width, height: int, title: string) -> LVO_Window {
 
 @(private = "file")
 update :: proc(win: ^LVO_Window) {
+	// if cursor_captured {
+	// 	glfw.SetInputMode(win.window, glfw.RAW_MOUSE_MOTION, 1)
+	// } else {
+	// 	glfw.SetInputMode(win.window, glfw.CURSOR_NORMAL, 1)
+	// }
 	win.dt = f32(glfw.GetTime()) - win.last
 	win.last = f32(glfw.GetTime())
 	x += win.dt

@@ -2,7 +2,7 @@ package lvo
 
 import "core:fmt"
 import "core:io"
-
+import "core:slice"
 LVO_Block_Type :: struct {
 	name:             string,
 	vertex_positions: []f32,
@@ -25,11 +25,10 @@ create_lvo_block_type :: proc(
 ) -> LVO_Block_Type {
 	block_type := LVO_Block_Type {
 		name             = name,
-		vertex_positions = CUBE_VERTEX_POSITIONS,
-		indices          = CUBE_INDICES,
-		tex_coords       = CUBE_TEX_COORDS,
+		vertex_positions = slice.clone(CUBE_VERTEX_POSITIONS),
+		indices          = slice.clone(CUBE_INDICES),
+		tex_coords       = slice.clone(CUBE_TEX_COORDS),
 	}
-	fmt.println("[LVO] Creating block:", name, "faces:")
 
 
 	for face in block_face_textures {
@@ -51,7 +50,6 @@ create_lvo_block_type :: proc(
 			"front"  = 4,
 			"back"   = 5,
 		}
-		fmt.println("[", index, ",", face, "]")
 		if face == "all" {
 			set_block_face(&block_type, 0, index)
 			set_block_face(&block_type, 1, index)
