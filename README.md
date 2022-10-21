@@ -1,3 +1,3 @@
-# Little Voxel Odin(engine)
+# Little Voxel Odin(game)
 
-Small voxel engine in odin im making
+Small voxel game in odin im making
