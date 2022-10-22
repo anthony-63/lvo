@@ -10,3 +10,6 @@ $(OUT): $(SRC_FILES)
 
 run: $(OUT)
 	./$(OUT)
+
+lines: 
+	wc src/*.odin assets/shaders/*

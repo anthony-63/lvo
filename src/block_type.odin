@@ -8,6 +8,7 @@ LVO_Block_Type :: struct {
 	vertex_positions: []f32,
 	indices:          []i32,
 	tex_coords:       []f32,
+	shading_values:   []f32,
 }
 
 @(private = "file")
@@ -28,8 +29,8 @@ create_lvo_block_type :: proc(
 		vertex_positions = slice.clone(CUBE_VERTEX_POSITIONS),
 		indices          = slice.clone(CUBE_INDICES),
 		tex_coords       = slice.clone(CUBE_TEX_COORDS),
+		shading_values   = slice.clone(CUBE_SHADING),
 	}
-
 
 	for face in block_face_textures {
 		texture := block_face_textures[face]
