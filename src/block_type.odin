@@ -74,6 +74,5 @@ create_lvo_block_type :: proc(
 		}
 	}
 
-
 	return block_type
 }

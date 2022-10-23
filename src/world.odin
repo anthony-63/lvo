@@ -3,7 +3,6 @@ package lvo
 import la "core:math/linalg"
 import "core:math"
 import "core:math/rand"
-import "core:fmt"
 
 LVO_World :: struct {
 	texture_manager: LVO_Texture_Manager,
@@ -69,15 +68,24 @@ init_lvo_textures :: proc(world: ^LVO_World, texture_pack: string) {
 	generate_lvo_texture_manager_mipmaps()
 }
 
-create_lvo_world :: proc() -> LVO_World {
-	world: LVO_World
+@(private = "file")
+random_get :: proc(array: $T/[]$E, r: ^rand.Rand = nil) -> (res: E) {
+	n := i64(len(array))
+	if n < 1 {
+		return E{}
+	}
+	return array[rand.int63_max(n, r)]
+}
 
-	init_lvo_textures(&world, "default")
+create_lvo_world :: proc() -> ^LVO_World {
+	world := new(LVO_World)
+
+	init_lvo_textures(world, "default")
 
 	for x in 0 ..= 7 {
 		for z in 0 ..= 7 {
 			chunk_position: la.Vector3f32 = {f32(x) - 4, -1, f32(z) - 4}
-			current_chunk := create_lvo_chunk(&world, chunk_position)
+			current_chunk := create_lvo_chunk(world, chunk_position)
 
 			for i in 0 ..= CHUNK_WIDTH - 1 {
 				for j in 0 ..= CHUNK_HEIGHT - 1 {
@@ -98,14 +106,8 @@ create_lvo_world :: proc() -> LVO_World {
 		}
 	}
 	for k, _ in world.chunks {
-		fmt.println(k)
+		update_lvo_chunk_mesh(&(world.chunks[k]))
 	}
-	for k, _ in world.chunks {
-		update_lvo_chunk_mesh(&world.chunks[k])
-	}
-
-
-	update_lvo_chunk_mesh(&world.chunks[{0, 0, 0}])
 
 	return world
 }

@@ -22,7 +22,7 @@ LVO_Window :: struct {
 	shader:                                         LVO_Shader,
 	camera:                                         LVO_Camera,
 	mouse_dx, mouse_dy, last_mouse_x, last_mouse_y: f32,
-	world:                                          LVO_World,
+	world:                                          ^LVO_World,
 }
 
 cursor_captured := false
@@ -113,7 +113,7 @@ create_lvo_window :: proc(width, height: int, title: string) -> LVO_Window {
 
 	gl.Enable(gl.MULTISAMPLE)
 	gl.Enable(gl.DEPTH_TEST)
-	gl.Enable(gl.CULL_FACE)
+	// gl.Enable(gl.CULL_FACE)
 
 	window.world = create_lvo_world()
 	window.shader = create_lvo_shader("assets/shaders/voxel.vs", "assets/shaders/voxel.fs")
@@ -156,7 +156,7 @@ draw :: proc(win: ^LVO_Window) {
 
 	gl.ClearColor(0.1, 0.2, 0.3, 1.0)
 	gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
-	draw_lvo_world(&win.world)
+	draw_lvo_world(win.world)
 }
 
 run_lvo_window :: proc(win: ^LVO_Window) {
