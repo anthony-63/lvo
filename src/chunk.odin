@@ -23,8 +23,8 @@ LVO_Chunk :: struct {
 	blocks:                  [CHUNK_WIDTH][CHUNK_HEIGHT][CHUNK_LENGTH]i32,
 }
 
-create_lvo_chunk :: proc(world: ^LVO_World, chunk_position: la.Vector3f32) -> LVO_Chunk {
-	chunk: LVO_Chunk
+create_lvo_chunk :: proc(world: ^LVO_World, chunk_position: la.Vector3f32) -> ^LVO_Chunk {
+	chunk: ^LVO_Chunk = new(LVO_Chunk)
 
 	chunk.chunk_position = chunk_position
 	chunk.position = {
@@ -113,19 +113,25 @@ update_lvo_chunk_mesh :: proc(chunk: ^LVO_Chunk) {
 						f32(ly),
 						chunk.position.z +
 						f32(lz)
+					if block_type.is_cube {
+						if !(get_lvo_world_block_number(chunk.world, {x + 1.0, y, z}) !=
+							   0) {add_face(0, chunk, block_type, x, y, z)}
+						if !(get_lvo_world_block_number(chunk.world, {x - 1.0, y, z}) !=
+							   0) {add_face(1, chunk, block_type, x, y, z)}
+						if !(get_lvo_world_block_number(chunk.world, {x, y + 1.0, z}) !=
+							   0) {add_face(2, chunk, block_type, x, y, z)}
+						if !(get_lvo_world_block_number(chunk.world, {x, y - 1.0, z}) !=
+							   0) {add_face(3, chunk, block_type, x, y, z)}
+						if !(get_lvo_world_block_number(chunk.world, {x, y, z + 1.0}) !=
+							   0) {add_face(4, chunk, block_type, x, y, z)}
+						if !(get_lvo_world_block_number(chunk.world, {x, y, z - 1.0}) !=
+							   0) {add_face(5, chunk, block_type, x, y, z)}
+					} else {
+						for i in 0 ..= len(block_type.vertex_positions) - 1 {
+							add_face(auto_cast i, chunk, block_type, x, y, z)
+						}
+					}
 
-					if !(get_lvo_world_block_number(chunk.world, {x + 1.0, y, z}) !=
-						   0) {add_face(0, chunk, block_type, x, y, z)}
-					if !(get_lvo_world_block_number(chunk.world, {x - 1.0, y, z}) !=
-						   0) {add_face(1, chunk, block_type, x, y, z)}
-					if !(get_lvo_world_block_number(chunk.world, {x, y + 1.0, z}) !=
-						   0) {add_face(2, chunk, block_type, x, y, z)}
-					if !(get_lvo_world_block_number(chunk.world, {x, y - 1.0, z}) !=
-						   0) {add_face(3, chunk, block_type, x, y, z)}
-					if !(get_lvo_world_block_number(chunk.world, {x, y, z + 1.0}) !=
-						   0) {add_face(4, chunk, block_type, x, y, z)}
-					if !(get_lvo_world_block_number(chunk.world, {x, y, z - 1.0}) !=
-						   0) {add_face(5, chunk, block_type, x, y, z)}
 				}
 			}
 		}

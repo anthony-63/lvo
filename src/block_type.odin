@@ -3,6 +3,7 @@ package lvo
 import "core:fmt"
 import "core:io"
 import "core:slice"
+import "models"
 
 LVO_Block_Type :: struct {
 	name:             string,
@@ -10,10 +11,17 @@ LVO_Block_Type :: struct {
 	tex_coords:       [][]f32,
 	shading_values:   [][]f32,
 	indices:          []i32,
+	transparent:      b32,
+	is_cube:          b32,
 }
 
 @(private = "file")
 set_block_face :: proc(block_type: ^LVO_Block_Type, face: i32, tex_idx: f32) {
+	fmt.println(len(block_type.tex_coords), face)
+	if face > auto_cast len(block_type.tex_coords) - 1 {
+		return
+	}
+
 	block_type.tex_coords[face] = slice.clone(block_type.tex_coords[face])
 
 	for vertex in 0 ..= 3 {
@@ -30,12 +38,15 @@ create_lvo_block_type :: proc(
 	name := "unknown",
 	texture_manager: ^LVO_Texture_Manager,
 	block_face_textures: map[string]string,
+	model: models.LVO_Model = models.LVO_CUBE_MODEL,
 ) -> LVO_Block_Type {
 	block_type := LVO_Block_Type {
 		name             = name,
-		vertex_positions = slice.clone(CUBE_VERTEX_POSITIONS),
-		tex_coords       = slice.clone(CUBE_TEX_COORDS),
-		shading_values   = slice.clone(CUBE_SHADING),
+		vertex_positions = slice.clone(model.vertices),
+		tex_coords       = slice.clone(model.tex_coords),
+		shading_values   = slice.clone(model.shading),
+		transparent      = model.transparent,
+		is_cube          = model.is_cube,
 	}
 
 	for face in block_face_textures {
