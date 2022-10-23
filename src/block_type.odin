@@ -3,21 +3,28 @@ package lvo
 import "core:fmt"
 import "core:io"
 import "core:slice"
+
 LVO_Block_Type :: struct {
 	name:             string,
-	vertex_positions: []f32,
+	vertex_positions: [][]f32,
+	tex_coords:       [][]f32,
+	shading_values:   [][]f32,
 	indices:          []i32,
-	tex_coords:       []f32,
-	shading_values:   []f32,
 }
 
 @(private = "file")
-set_block_face :: proc(block_type: ^LVO_Block_Type, side: int, tex_idx: f32) {
+set_block_face :: proc(block_type: ^LVO_Block_Type, face: i32, tex_idx: f32) {
+	block_type.tex_coords[face] = slice.clone(block_type.tex_coords[face])
+
 	for vertex in 0 ..= 3 {
-		block_type.tex_coords[side * 12 + vertex * 3 + 2] = tex_idx
+		block_type.tex_coords[face][vertex * 3 + 2] = tex_idx
 	}
 }
 
+
+create_lvo_air :: proc() -> LVO_Block_Type {
+	return LVO_Block_Type{name = "air"}
+}
 
 create_lvo_block_type :: proc(
 	name := "unknown",
@@ -27,7 +34,6 @@ create_lvo_block_type :: proc(
 	block_type := LVO_Block_Type {
 		name             = name,
 		vertex_positions = slice.clone(CUBE_VERTEX_POSITIONS),
-		indices          = slice.clone(CUBE_INDICES),
 		tex_coords       = slice.clone(CUBE_TEX_COORDS),
 		shading_values   = slice.clone(CUBE_SHADING),
 	}
@@ -43,7 +49,7 @@ create_lvo_block_type :: proc(
 			}
 		}
 
-		block_face_locations := map[string]int {
+		block_face_locations := map[string]i32 {
 			"right"  = 0,
 			"left"   = 1,
 			"top"    = 2,

@@ -1,0 +1,9 @@
+cobblestone; shapes.cube; transparency.opaque; all cobblestone
+grass; shapes.cube; transparency.opaque; top grass; bottom dirt; sides grass_side
+grass_block; shapes.cube; transparency.opaque; all grass
+dirt; shapes.cube; transparency.opaque; all dirt
+stone; shapes.cube; transparency.opaque; all stone
+sand; shapes.cube; transparency.opaque; all sand
+planks; shapes.cube; transparency.opaque; all planks
+log; shapes.cube; transparency.opaque; top log_y; bottom log_y; sides log_side
+

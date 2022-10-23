@@ -2,7 +2,7 @@ ODIN = odin
 OUT = lvo
 SRC = src/
 SRC_FILES = $(SRC)/*
-FLAGS = -lld
+FLAGS = -lld -debug
 all: $(OUT)
 
 $(OUT): $(SRC_FILES)
