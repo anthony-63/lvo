@@ -41,11 +41,18 @@ create_lvo_block_type :: proc(
 ) -> LVO_Block_Type {
 	block_type := LVO_Block_Type {
 		name             = name,
-		vertex_positions = slice.clone(CUBE_VERTEX_POSITIONS),
-		tex_coords       = slice.clone(CUBE_TEX_COORDS),
-		shading_values   = slice.clone(CUBE_SHADING),
+		vertex_positions = slice.clone(model.vertices),
+		tex_coords       = slice.clone(model.tex_coords),
+		shading_values   = slice.clone(model.shading),
 		transparent      = model.transparent,
 		is_cube          = model.is_cube,
+	}
+	failed := false
+	assert(len(block_type.vertex_positions) > 1)
+	assert(len(block_type.tex_coords) > 1)
+	assert(len(block_type.shading_values) > 1)
+	if (failed) {
+		panic("Block creation failed")
 	}
 
 	for face in block_face_textures {

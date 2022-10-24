@@ -106,6 +106,9 @@ update_lvo_chunk_mesh :: proc(chunk: ^LVO_Chunk) {
 				block_number := chunk.blocks[lx][ly][lz]
 				if block_number != 0 {
 					block_type := chunk.world.block_types[block_number]
+					assert(len(block_type.vertex_positions) > 1)
+					assert(len(block_type.tex_coords) > 1)
+					assert(len(block_type.shading_values) > 1)
 					x, y, z :=
 						chunk.position.x +
 						f32(lx),
