@@ -107,18 +107,28 @@ create_lvo_window :: proc(width, height: int, title: string) -> LVO_Window {
 	}
 
 	glfw.SetInputMode(window.window, glfw.RAW_MOUSE_MOTION, 1)
-	glfw.SetInputMode(window.window, glfw.CURSOR, glfw.CURSOR_DISABLED)
+	fmt.println("[LVO] Raw mouse input enabled")
+	// glfw.SetInputMode(window.window, glfw.CURSOR, glfw.CURSOR_DISABLED)
 
-	cursor_captured = true
+	cursor_captured = false
 
 	gl.Enable(gl.MULTISAMPLE)
 	gl.Enable(gl.DEPTH_TEST)
-	// gl.Enable(gl.CULL_FACE)
+	fmt.println("[LVO] Enabled sampling and depth testing")
+
+	gl.Enable(gl.CULL_FACE)
 
 	window.world = create_lvo_world()
+	fmt.println("[LVO] Created world")
+
 	window.shader = create_lvo_shader("assets/shaders/voxel.vs", "assets/shaders/voxel.fs")
+	fmt.println("[LVO] Loaded shaders")
+
 	use_lvo_shader(window.shader)
+	fmt.println("[LVO] Using shaders")
 	window.camera = create_lvo_camera(window.shader, width, height, SENSITIVITY, SPEED)
+	fmt.println("[LVO] Created camera")
+
 	return window
 }
 

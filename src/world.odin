@@ -12,7 +12,10 @@ LVO_World :: struct {
 }
 
 init_lvo_textures :: proc(world: ^LVO_World, texture_pack: string) {
+	fmt.println("[LVO] Creating texture manager")
 	world.texture_manager = create_lvo_texture_manager(16, 16, 256, texture_pack)
+	fmt.println("[LVO] Created texture manager")
+	fmt.println("[LVO] Loading textures...")
 	load_all_lvo_blocks(world, texture_pack)
 	generate_lvo_texture_manager_mipmaps()
 }
@@ -28,6 +31,7 @@ random_get :: proc(array: $T/[]$E, r: ^rand.Rand = nil) -> (res: E) {
 
 create_lvo_world :: proc() -> ^LVO_World {
 	world := new(LVO_World)
+	fmt.println("[LVO] Allocated world\n[LVO] Initializing textures")
 
 	init_lvo_textures(world, "default")
 

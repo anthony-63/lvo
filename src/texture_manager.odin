@@ -7,13 +7,14 @@ import "core:strings"
 import "core:fmt"
 import png "core:image/png"
 import image "core:image"
+import "core:path/filepath"
 
 LVO_Texture_Manager :: struct {
 	tex_width, tex_height: i32,
 	max_textures:          i32,
-	textures:              [dynamic]string,
 	tex_array:             u32,
 	texture_pack:          string,
+	textures:              [dynamic]string,
 }
 
 create_lvo_texture_manager :: proc(
@@ -24,7 +25,6 @@ create_lvo_texture_manager :: proc(
 	tex_manager.tex_width = tex_width
 	tex_manager.tex_height = tex_height
 	tex_manager.max_textures = max_textures
-	tex_manager.textures = [dynamic]string{}
 	tex_manager.tex_array = 0
 	tex_manager.texture_pack = texture_pack
 
@@ -62,17 +62,14 @@ add_lvo_texture :: proc(texture_manager: ^LVO_Texture_Manager, texture: string) 
 	}
 	if !texture_exists {
 		append(&texture_manager.textures, texture)
-		texture_path_sb := strings.builder_make()
-		fmt.sbprintf(
-			&texture_path_sb,
-			"assets/texturepacks/%v/%v.png",
-			texture_manager.texture_pack,
-			texture,
+		texture_path := filepath.join(
+			{"assets", "texturepacks", texture_manager.texture_pack, texture},
 		)
-		texture_path := strings.to_string(texture_path_sb)
-		defer delete(texture_path)
 
+		fmt.println("[LVO] Opening texture:", texture_path)
 		img, err := png.load_from_file(texture_path)
+		fmt.println("[LVO] Opened texture:", texture_path)
+
 		defer image.destroy(img)
 		if err != nil {
 			fmt.panicf("Failed to read texture file: %s\nError: %v", texture_path, err)
@@ -87,7 +84,6 @@ add_lvo_texture :: proc(texture_manager: ^LVO_Texture_Manager, texture: string) 
 			}
 		}
 
-		fmt.println("[LVO] Loading texture: ", texture_path)
 
 		gl.BindTexture(gl.TEXTURE_2D_ARRAY, texture_manager.tex_array)
 		gl.TexSubImage3D(
@@ -103,6 +99,7 @@ add_lvo_texture :: proc(texture_manager: ^LVO_Texture_Manager, texture: string) 
 			gl.UNSIGNED_BYTE,
 			&img.pixels.buf[0],
 		)
+		fmt.println("[LVO] Loaded texture: ", texture_path)
 
 	}
 }

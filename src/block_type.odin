@@ -17,7 +17,6 @@ LVO_Block_Type :: struct {
 
 @(private = "file")
 set_block_face :: proc(block_type: ^LVO_Block_Type, face: i32, tex_idx: f32) {
-	fmt.println(len(block_type.tex_coords), face)
 	if face > auto_cast len(block_type.tex_coords) - 1 {
 		return
 	}
@@ -42,9 +41,9 @@ create_lvo_block_type :: proc(
 ) -> LVO_Block_Type {
 	block_type := LVO_Block_Type {
 		name             = name,
-		vertex_positions = slice.clone(model.vertices),
-		tex_coords       = slice.clone(model.tex_coords),
-		shading_values   = slice.clone(model.shading),
+		vertex_positions = slice.clone(CUBE_VERTEX_POSITIONS),
+		tex_coords       = slice.clone(CUBE_TEX_COORDS),
+		shading_values   = slice.clone(CUBE_SHADING),
 		transparent      = model.transparent,
 		is_cube          = model.is_cube,
 	}
