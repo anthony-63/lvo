@@ -37,7 +37,7 @@ create_lvo_block_type :: proc(
 	name := "unknown",
 	texture_manager: ^LVO_Texture_Manager,
 	block_face_textures: map[string]string,
-	model: models.LVO_Model = models.LVO_CUBE_MODEL,
+	model: models.LVO_Model,
 ) -> LVO_Block_Type {
 	block_type := LVO_Block_Type {
 		name             = name,

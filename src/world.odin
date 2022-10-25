@@ -45,7 +45,6 @@ create_lvo_world :: proc() -> ^LVO_World {
 	parser := create_lvo_config_parser(&world.texture_manager)
 	world.block_types = parse_lconf_file(&parser, "blocks.lconf")
 
-
 	for x in 0 ..= 7 {
 		for z in 0 ..= 7 {
 			chunk_position: la.Vector3f32 = {f32(x) - 4, -1, f32(z) - 4}

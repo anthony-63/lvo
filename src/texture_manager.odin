@@ -77,7 +77,6 @@ add_lvo_texture :: proc(texture_manager: ^LVO_Texture_Manager, texture: string) 
 			fmt.panicf("Failed to read texture file: %s\nError: %v", texture_path, err)
 		}
 
-
 		index := 0
 		for v, i in texture_manager.textures {
 			if v == texture {

@@ -60,7 +60,7 @@ parse_lconf_line :: proc(cfg_parser: ^LVO_Config_Parser, line: string) -> LVO_Bl
 		i += 1
 	}
 	lvo_log("Parsed block:", name, textures, model_name)
-	return create_lvo_block_type(name, cfg_parser.texture_manager, textures)
+	return create_lvo_block_type(name, cfg_parser.texture_manager, textures, model)
 }
 
 parse_lconf_source :: proc(
