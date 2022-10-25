@@ -41,12 +41,22 @@ create_lvo_block_type :: proc(
 ) -> LVO_Block_Type {
 	block_type := LVO_Block_Type {
 		name             = name,
-		vertex_positions = slice.clone(model.vertices),
-		tex_coords       = slice.clone(model.tex_coords),
-		shading_values   = slice.clone(model.shading),
+		vertex_positions = make([][]f32, len(model.vertices)),
+		tex_coords       = make([][]f32, len(model.tex_coords)),
+		shading_values   = make([][]f32, len(model.shading)),
 		transparent      = model.transparent,
 		is_cube          = model.is_cube,
 	}
+	for inner, i in model.vertices {
+		block_type.vertex_positions[i] = slice.clone(inner)
+	}
+	for inner, i in model.tex_coords {
+		block_type.tex_coords[i] = slice.clone(inner)
+	}
+	for inner, i in model.shading {
+		block_type.shading_values[i] = slice.clone(inner)
+	}
+
 	failed := false
 	assert(len(block_type.vertex_positions) > 1)
 	assert(len(block_type.tex_coords) > 1)

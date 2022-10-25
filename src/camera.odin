@@ -24,8 +24,8 @@ create_lvo_camera :: proc(
 			width = auto_cast width,
 			height = auto_cast height,
 			shader = shader,
-			position = {0, 0, -3},
-			rotation = {math.TAU / 4.0, 0},
+			position = {0, 0, 0},
+			rotation = {-math.TAU / 4.0, 0},
 			input = {0.0, 0.0, 0.0},
 			sensitivity = sensitivity,
 			speed = speed,
@@ -38,7 +38,7 @@ update_lvo_camera :: proc(camera: ^LVO_Camera, dt: f32) {
 	camera.position.y += camera.input.y * m
 
 	if camera.input.x != 0 || camera.input.z != 0 {
-		angle := camera.rotation.x + math.atan2(camera.input.z, camera.input.x) - math.TAU / 4.0
+		angle := camera.rotation.x - math.atan2(camera.input.z, camera.input.x) + math.TAU / 4.0
 
 		camera.position.x += math.cos(angle) * m
 		camera.position.z += math.sin(angle) * m
@@ -52,11 +52,11 @@ update_lvo_camera_matrices :: proc(camera: ^LVO_Camera) {
 	m_matrix := la.MATRIX4F32_IDENTITY
 	m_matrix *= la.matrix4_rotate_f32(camera.rotation.y, la.Vector3f32{1.0, 0.0, 0.0})
 	m_matrix *= la.matrix4_rotate_f32(
-		(-camera.rotation.x) - math.TAU / 4.0,
+		camera.rotation.x + math.TAU / 4.0,
 		la.Vector3f32{0.0, 1.0, 0.0},
 	)
 	m_matrix *= la.matrix4_translate(
-		la.Vector3f32{-camera.position.x, -camera.position.y, camera.position.z},
+		la.Vector3f32{-camera.position.x, -camera.position.y, -camera.position.z},
 	)
 
 	v_matrix := la.MATRIX4F32_IDENTITY

@@ -32,6 +32,7 @@ create_lvo_texture_manager :: proc(
 	gl.BindTexture(gl.TEXTURE_2D_ARRAY, tex_manager.tex_array)
 
 	gl.TexParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
+	gl.TexParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
 
 	gl.TexImage3D(
 		gl.TEXTURE_2D_ARRAY,
@@ -62,13 +63,15 @@ add_lvo_texture :: proc(texture_manager: ^LVO_Texture_Manager, texture: string) 
 	}
 	if !texture_exists {
 		append(&texture_manager.textures, texture)
+		tpng := strings.concatenate({texture, ".png"})
+
 		texture_path := filepath.join(
-			{"assets", "texturepacks", texture_manager.texture_pack, texture},
+			{"assets", "texturepacks", texture_manager.texture_pack, tpng},
 		)
 
-		fmt.println("[LVO] Opening texture:", texture_path)
+		lvo_log("Opening texture:", texture_path)
 		img, err := png.load_from_file(texture_path)
-		fmt.println("[LVO] Opened texture:", texture_path)
+		lvo_log("Opened texture:", texture_path)
 
 		defer image.destroy(img)
 		if err != nil {
@@ -84,7 +87,6 @@ add_lvo_texture :: proc(texture_manager: ^LVO_Texture_Manager, texture: string) 
 			}
 		}
 
-
 		gl.BindTexture(gl.TEXTURE_2D_ARRAY, texture_manager.tex_array)
 		gl.TexSubImage3D(
 			gl.TEXTURE_2D_ARRAY,
@@ -99,7 +101,7 @@ add_lvo_texture :: proc(texture_manager: ^LVO_Texture_Manager, texture: string) 
 			gl.UNSIGNED_BYTE,
 			&img.pixels.buf[0],
 		)
-		fmt.println("[LVO] Loaded texture: ", texture_path)
+		lvo_log("Loaded texture: ", texture_path)
 
 	}
 }

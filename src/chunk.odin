@@ -21,6 +21,7 @@ LVO_Chunk :: struct {
 	vao, vbo, tbo, sbo, ibo: u32,
 	world:                   ^LVO_World,
 	blocks:                  [CHUNK_WIDTH][CHUNK_HEIGHT][CHUNK_LENGTH]i32,
+	subchunks:               map[la.Vector3f32]^LVO_Subchunk,
 }
 
 create_lvo_chunk :: proc(world: ^LVO_World, chunk_position: la.Vector3f32) -> ^LVO_Chunk {
@@ -34,8 +35,17 @@ create_lvo_chunk :: proc(world: ^LVO_World, chunk_position: la.Vector3f32) -> ^L
 	}
 
 	chunk.world = world
-
 	chunk.has_mesh = false
+
+	chunk.subchunks = {}
+	for x in 0 ..= (CHUNK_WIDTH / SUBCHUNK_WIDTH) - 1 {
+		for y in 0 ..= (CHUNK_HEIGHT / SUBCHUNK_HEIGHT) - 1 {
+			for z in 0 ..= (CHUNK_LENGTH / SUBCHUNK_LENGTH) - 1 {
+				subchunk_pos: la.Vector3f32 = {f32(x), f32(y), f32(z)}
+				chunk.subchunks[subchunk_pos] = create_lvo_subchunk(chunk, subchunk_pos)
+			}
+		}
+	}
 
 	chunk.mesh_vertices = {}
 	chunk.mesh_indices = {}
@@ -61,33 +71,53 @@ create_lvo_chunk :: proc(world: ^LVO_World, chunk_position: la.Vector3f32) -> ^L
 	return chunk
 }
 
+update_lvo_chunk_subchunk_meshes :: proc(chunk: ^LVO_Chunk) {
+	for pos in chunk.subchunks {
+		subchunk := chunk.subchunks[pos]
+		update_lvo_subchunk_mesh(subchunk)
+	}
+}
+
 @(private = "file")
-add_face :: proc(face: i32, chunk: ^LVO_Chunk, block_type: LVO_Block_Type, x, y, z: f32) {
-	vp_face := block_type.vertex_positions[face]
-	vertex_positions := slice.clone(vp_face)
-
-	for i in 0 ..= 3 {
-		vertex_positions[i * 3 + 0] += x
-		vertex_positions[i * 3 + 1] += y
-		vertex_positions[i * 3 + 2] += z
+try_update_subchunk_mesh :: proc(chunk: ^LVO_Chunk, position: la.Vector3f32) {
+	if position in chunk.subchunks {
+		update_lvo_subchunk_mesh(chunk.subchunks[position])
 	}
+}
 
-	append(&chunk.mesh_vertices, ..vertex_positions)
+update_lvo_chunk_at_position :: proc(chunk: ^LVO_Chunk, position: la.Vector3f32) {
+	x, y, z := position.x, position.y, position.z
 
-	indices: []i32 = {0, 1, 2, 0, 2, 3}
+	lx, ly, lz := i32(x) %% SUBCHUNK_WIDTH, i32(y) %% SUBCHUNK_HEIGHT, i32(z) %% SUBCHUNK_LENGTH
 
-	for i in 0 ..= 5 {
-		indices[i] += chunk.mesh_index_counter
+	clxyz := get_lvo_world_local_position(chunk.world, position)
+	clx, cly, clz := clxyz.x, clxyz.y, clxyz.z
+
+	sx, sy, sz :=
+		math.floor(clx / SUBCHUNK_WIDTH),
+		math.floor(cly / SUBCHUNK_HEIGHT),
+		math.floor(clz / SUBCHUNK_LENGTH)
+
+	update_lvo_subchunk_mesh(chunk.subchunks[{sx, sy, sz}])
+
+	if lx == SUBCHUNK_WIDTH - 1 {
+		try_update_subchunk_mesh(chunk, {sx + 1, sy, sz})
 	}
-
-	append(&chunk.mesh_indices, ..indices)
-	chunk.mesh_index_counter += 4
-
-	tex_coords := block_type.tex_coords[face]
-	shading_values := block_type.shading_values[face]
-
-	append(&chunk.mesh_tex_coords, ..tex_coords)
-	append(&chunk.mesh_shading_values, ..shading_values)
+	if lx == 0 {
+		try_update_subchunk_mesh(chunk, {sx - 1, sy, sz})
+	}
+	if ly == SUBCHUNK_HEIGHT - 1 {
+		try_update_subchunk_mesh(chunk, {sx, sy + 1, sz})
+	}
+	if ly == 0 {
+		try_update_subchunk_mesh(chunk, {sx, sy - 1, sz})
+	}
+	if lz == SUBCHUNK_LENGTH - 1 {
+		try_update_subchunk_mesh(chunk, {sx, sy, sz + 1})
+	}
+	if lz == 0 {
+		try_update_subchunk_mesh(chunk, {sx, sy, sz - 1})
+	}
 }
 
 update_lvo_chunk_mesh :: proc(chunk: ^LVO_Chunk) {
@@ -100,46 +130,23 @@ update_lvo_chunk_mesh :: proc(chunk: ^LVO_Chunk) {
 	chunk.mesh_index_counter = 0
 	chunk.mesh_indices = {}
 
-	for lx in 0 ..= CHUNK_WIDTH - 1 {
-		for ly in 0 ..= CHUNK_HEIGHT - 1 {
-			for lz in 0 ..= CHUNK_LENGTH - 1 {
-				block_number := chunk.blocks[lx][ly][lz]
-				if block_number != 0 {
-					block_type := chunk.world.block_types[block_number]
-					assert(len(block_type.vertex_positions) > 1)
-					assert(len(block_type.tex_coords) > 1)
-					assert(len(block_type.shading_values) > 1)
-					x, y, z :=
-						chunk.position.x +
-						f32(lx),
-						chunk.position.y +
-						f32(ly),
-						chunk.position.z +
-						f32(lz)
-					if block_type.is_cube {
-						if !(get_lvo_world_block_number(chunk.world, {x + 1.0, y, z}) !=
-							   0) {add_face(0, chunk, block_type, x, y, z)}
-						if !(get_lvo_world_block_number(chunk.world, {x - 1.0, y, z}) !=
-							   0) {add_face(1, chunk, block_type, x, y, z)}
-						if !(get_lvo_world_block_number(chunk.world, {x, y + 1.0, z}) !=
-							   0) {add_face(2, chunk, block_type, x, y, z)}
-						if !(get_lvo_world_block_number(chunk.world, {x, y - 1.0, z}) !=
-							   0) {add_face(3, chunk, block_type, x, y, z)}
-						if !(get_lvo_world_block_number(chunk.world, {x, y, z + 1.0}) !=
-							   0) {add_face(4, chunk, block_type, x, y, z)}
-						if !(get_lvo_world_block_number(chunk.world, {x, y, z - 1.0}) !=
-							   0) {add_face(5, chunk, block_type, x, y, z)}
-					} else {
-						for i in 0 ..= len(block_type.vertex_positions) - 1 {
-							add_face(auto_cast i, chunk, block_type, x, y, z)
-						}
-					}
+	for pos in chunk.subchunks {
+		subchunk := chunk.subchunks[pos]
+		append(&chunk.mesh_vertices, ..subchunk.mesh_vertices[:])
+		append(&chunk.mesh_tex_coords, ..subchunk.mesh_tex_coords[:])
+		append(&chunk.mesh_shading_values, ..subchunk.mesh_shading_values[:])
 
-				}
-			}
+		for i in subchunk.mesh_indices {
+			append(&chunk.mesh_indices, i + chunk.mesh_index_counter)
 		}
+
+		chunk.mesh_index_counter += subchunk.mesh_index_counter
 	}
 
+	send_lvo_chunk_to_gpu(chunk)
+}
+
+send_lvo_chunk_to_gpu :: proc(chunk: ^LVO_Chunk) {
 	if chunk.mesh_index_counter == 0 {
 		return
 	}
