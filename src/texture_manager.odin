@@ -64,7 +64,6 @@ add_lvo_texture :: proc(texture_manager: ^LVO_Texture_Manager, texture: string) 
 	if !texture_exists {
 		append(&texture_manager.textures, texture)
 		tpng := strings.concatenate({texture, ".png"})
-
 		texture_path := filepath.join(
 			{"assets", "texturepacks", texture_manager.texture_pack, tpng},
 		)

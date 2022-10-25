@@ -38,12 +38,13 @@ create_lvo_world :: proc() -> ^LVO_World {
 	world := new(LVO_World)
 	lvo_log("Allocated world")
 
+	lvo_log("Initializing textures")
+	init_lvo_textures(world, "default")
+
 	lvo_log("Loading blocks.lconf...")
 	parser := create_lvo_config_parser(&world.texture_manager)
 	world.block_types = parse_lconf_file(&parser, "blocks.lconf")
 
-	lvo_log("Initializing textures")
-	init_lvo_textures(world, "default")
 
 	for x in 0 ..= 7 {
 		for z in 0 ..= 7 {

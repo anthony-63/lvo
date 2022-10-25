@@ -6,3 +6,5 @@ stone; cube; opaque; all stone
 sand; cube; opaque; all sand
 planks; cube; opaque; all planks
 log; cube; opaque; top log_y; bottom log_y; sides log_side
+rose; plant; transparent; all red_rose
+daisy; plant; transparent; all yellow_flower

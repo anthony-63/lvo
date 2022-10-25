@@ -51,7 +51,7 @@ parse_lconf_line :: proc(cfg_parser: ^LVO_Config_Parser, line: string) -> LVO_Bl
 				transparent = true
 			}
 		} else {
-			split := strings.split(tokens[i], " ")
+			split := strings.split(strings.clone(tokens[i]), " ")
 			side := split[0]
 			texture := split[1]
 			textures[side] = texture
@@ -71,7 +71,7 @@ parse_lconf_source :: proc(
 	LVO_Config_Parser_Error,
 ) {
 	src := source
-	block_types: [dynamic]LVO_Block_Type
+	block_types: [dynamic]LVO_Block_Type = {create_lvo_air()}
 	for line in strings.split_lines_iterator(&src) {
 		append(&block_types, parse_lconf_line(cfg_parser, line))
 	}
