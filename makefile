@@ -3,7 +3,7 @@ OUT = lvo
 WIN_OUT = $(OUT).exe
 SRC = src/
 SRC_FILES = $(SRC)/*
-VERSION = x86_64-ALPHA-0.0.1
+VERSION = x86_64-ALPHA-0.0.2
 
 all: $(OUT)
 windows: $(WIN_OUT)
@@ -18,7 +18,7 @@ $(OUT): $(SRC_FILES)
 
 $(WIN_OUT): $(SRC_FILES)
 	$(ODIN) build $(SRC) -out:$(WIN_OUT) -target:windows_amd64
-	x86_64-w64-mingw32-gcc $(OUT).obj windows/chkstk.S -Lwindows -lglfw3 -lucrt -fstack-protector -luser32 -lgdi32 -static -o $(WIN_OUT)
+	x86_64-w64-mingw32-gcc $(OUT).obj windows/chkstk.S -Lwindows -lglfw3 -lucrt -luser32 -lgdi32 -static -o $(WIN_OUT) -debug
 	rm $(OUT).obj
 
 run: $(OUT)

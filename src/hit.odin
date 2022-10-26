@@ -27,7 +27,7 @@ create_lvo_hitray :: proc(
 
 	hitray.vector = {
 		math.cos(rotation.x) * math.cos(rotation.y),
-		math.sin(rotation.y),
+		-math.sin(rotation.y),
 		math.sin(rotation.x) * math.cos(rotation.y),
 	}
 	hitray.block = {
@@ -119,16 +119,11 @@ check_lvo_hitray :: proc(
 	bpos: la.Vector3f32,
 	bnewpos: la.Vector3f32,
 ) -> b32 {
-	lvo_log(get_lvo_world_block_number(hitray.world, bnewpos), distance, bpos, bnewpos)
 	if get_lvo_world_block_number(hitray.world, bnewpos) != 0 {
 		callback(bpos, bnewpos)
 		return true
 	} else {
-		hitray.position = {
-			hitray.position.x + hitray.vector.x * distance,
-			hitray.position.y + hitray.vector.y * distance,
-			hitray.position.z + hitray.vector.z * distance,
-		}
+		hitray.position += hitray.vector * distance
 		hitray.block = bnewpos
 		hitray.distance += distance
 		return false

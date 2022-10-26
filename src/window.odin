@@ -13,7 +13,7 @@ FOV :: 90.0
 SENSITIVITY :: 0.002
 SPEED :: 5.0
 
-holding: i32 = 7
+HOLDING: i32 = 7
 
 LVO_Window :: struct {
 	window:                                         glfw.WindowHandle,
@@ -88,17 +88,50 @@ get_mouse_bt_input :: proc(window: ^LVO_Window) {
 		mbl_press = true
 		hit_ray := create_lvo_hitray(LVO_WORLD, window.camera.rotation, window.camera.position)
 		for hit_ray.distance < HIT_RANGE {
-			stepr := step_lvo_hitray(&hit_ray, proc(cblock: la.Vector3f32, nblock: la.Vector3f32) {
-				lvo_log("Placing block: ", cblock)
-				set_lvo_world_block(LVO_WORLD, cblock, holding)
+			step := step_lvo_hitray(&hit_ray, proc(cblock: la.Vector3f32, nblock: la.Vector3f32) {
+				lvo_log("Breaking block: ", cblock)
+				set_lvo_world_block(LVO_WORLD, nblock, 0)
 			})
-			if stepr {
+			if step {
 				break
 			}
 		}
 	}
 	if (glfw.GetMouseButton(window.window, glfw.MOUSE_BUTTON_LEFT) == glfw.RELEASE) && mbl_press {
 		mbl_press = false
+	}
+	if (glfw.GetMouseButton(window.window, glfw.MOUSE_BUTTON_RIGHT) == glfw.PRESS) && !mbr_press {
+		mbr_press = true
+		hit_ray := create_lvo_hitray(LVO_WORLD, window.camera.rotation, window.camera.position)
+		for hit_ray.distance < HIT_RANGE {
+			step := step_lvo_hitray(&hit_ray, proc(cblock: la.Vector3f32, nblock: la.Vector3f32) {
+				lvo_log("Placing block: ", cblock)
+				set_lvo_world_block(LVO_WORLD, cblock, HOLDING)
+			})
+			if step {
+				break
+			}
+		}
+	}
+	if (glfw.GetMouseButton(window.window, glfw.MOUSE_BUTTON_RIGHT) == glfw.RELEASE) && mbr_press {
+		mbr_press = false
+	}
+	if (glfw.GetMouseButton(window.window, glfw.MOUSE_BUTTON_MIDDLE) == glfw.PRESS) && !mbm_press {
+		mbm_press = true
+		hit_ray := create_lvo_hitray(LVO_WORLD, window.camera.rotation, window.camera.position)
+		for hit_ray.distance < HIT_RANGE {
+			step := step_lvo_hitray(&hit_ray, proc(cblock: la.Vector3f32, nblock: la.Vector3f32) {
+				HOLDING = get_lvo_world_block_number(LVO_WORLD, nblock)
+				lvo_log("Holding block id: ", HOLDING)
+			})
+			if step {
+				break
+			}
+		}
+	}
+	if (glfw.GetMouseButton(window.window, glfw.MOUSE_BUTTON_MIDDLE) == glfw.RELEASE) &&
+	   mbm_press {
+		mbm_press = false
 	}
 }
 
