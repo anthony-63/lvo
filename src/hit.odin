@@ -3,8 +3,6 @@ package lvo
 import "core:math"
 import la "core:math/linalg"
 
-HIT_RANGE :: 3
-
 LVO_HitRay :: struct {
 	vector:   la.Vector3f32,
 	position: la.Vector3f32,

@@ -9,12 +9,6 @@ import "core:strings"
 import la "core:math/linalg"
 import "core:math"
 
-FOV :: 90.0
-SENSITIVITY :: 0.002
-SPEED :: 5.0
-
-HOLDING: i32 = 7
-
 LVO_Window :: struct {
 	window:                                         glfw.WindowHandle,
 	width:                                          f64,
@@ -26,21 +20,12 @@ LVO_Window :: struct {
 	mouse_dx, mouse_dy, last_mouse_x, last_mouse_y: f32,
 }
 
-cursor_captured := false
-camera_temp_input: la.Vector3f32 = {0.0, 0.0, 0.0}
-
-mbl_press := false
-mbr_press := false
-mbm_press := false
-
-LVO_WORLD: ^LVO_World
-
 @(private = "file")
 key_callback :: proc "c" (window: glfw.WindowHandle, key, scancode, action, mods: i32) {
 	if key == glfw.KEY_ESCAPE && action == glfw.PRESS {
-		cursor_captured = !cursor_captured
+		CURSOR_CAPTURED = !CURSOR_CAPTURED
 	}
-	if cursor_captured {
+	if CURSOR_CAPTURED {
 		glfw.SetInputMode(window, glfw.CURSOR, glfw.CURSOR_DISABLED)
 	} else {
 		glfw.SetInputMode(window, glfw.CURSOR, glfw.CURSOR_NORMAL)
@@ -55,23 +40,23 @@ key_callback :: proc "c" (window: glfw.WindowHandle, key, scancode, action, mods
 
 	switch key {
 	case glfw.KEY_D:
-		camera_temp_input.x += input
+		CAMERA_TEMP_INPUT.x += input
 	case glfw.KEY_A:
-		camera_temp_input.x -= input
+		CAMERA_TEMP_INPUT.x -= input
 	case glfw.KEY_W:
-		camera_temp_input.z += input
+		CAMERA_TEMP_INPUT.z += input
 	case glfw.KEY_S:
-		camera_temp_input.z -= input
+		CAMERA_TEMP_INPUT.z -= input
 	case glfw.KEY_SPACE:
-		camera_temp_input.y += input
+		CAMERA_TEMP_INPUT.y += input
 	case glfw.KEY_LEFT_SHIFT:
-		camera_temp_input.y -= input
+		CAMERA_TEMP_INPUT.y -= input
 	}
 }
 
 @(private = "file")
 update_cursor_position :: proc(window: ^LVO_Window) {
-	if !cursor_captured {
+	if !CURSOR_CAPTURED {
 		return
 	}
 	x, y := glfw.GetCursorPos(window.window)
@@ -84,8 +69,8 @@ update_cursor_position :: proc(window: ^LVO_Window) {
 
 @(private = "file")
 get_mouse_bt_input :: proc(window: ^LVO_Window) {
-	if (glfw.GetMouseButton(window.window, glfw.MOUSE_BUTTON_LEFT) == glfw.PRESS) && !mbl_press {
-		mbl_press = true
+	if (glfw.GetMouseButton(window.window, glfw.MOUSE_BUTTON_LEFT) == glfw.PRESS) && !MBL_PRESS {
+		MBL_PRESS = true
 		hit_ray := create_lvo_hitray(LVO_WORLD, window.camera.rotation, window.camera.position)
 		for hit_ray.distance < HIT_RANGE {
 			step := step_lvo_hitray(&hit_ray, proc(cblock: la.Vector3f32, nblock: la.Vector3f32) {
@@ -97,11 +82,11 @@ get_mouse_bt_input :: proc(window: ^LVO_Window) {
 			}
 		}
 	}
-	if (glfw.GetMouseButton(window.window, glfw.MOUSE_BUTTON_LEFT) == glfw.RELEASE) && mbl_press {
-		mbl_press = false
+	if (glfw.GetMouseButton(window.window, glfw.MOUSE_BUTTON_LEFT) == glfw.RELEASE) && MBL_PRESS {
+		MBL_PRESS = false
 	}
-	if (glfw.GetMouseButton(window.window, glfw.MOUSE_BUTTON_RIGHT) == glfw.PRESS) && !mbr_press {
-		mbr_press = true
+	if (glfw.GetMouseButton(window.window, glfw.MOUSE_BUTTON_RIGHT) == glfw.PRESS) && !MBR_PRESS {
+		MBR_PRESS = true
 		hit_ray := create_lvo_hitray(LVO_WORLD, window.camera.rotation, window.camera.position)
 		for hit_ray.distance < HIT_RANGE {
 			step := step_lvo_hitray(&hit_ray, proc(cblock: la.Vector3f32, nblock: la.Vector3f32) {
@@ -113,11 +98,11 @@ get_mouse_bt_input :: proc(window: ^LVO_Window) {
 			}
 		}
 	}
-	if (glfw.GetMouseButton(window.window, glfw.MOUSE_BUTTON_RIGHT) == glfw.RELEASE) && mbr_press {
-		mbr_press = false
+	if (glfw.GetMouseButton(window.window, glfw.MOUSE_BUTTON_RIGHT) == glfw.RELEASE) && MBR_PRESS {
+		MBR_PRESS = false
 	}
-	if (glfw.GetMouseButton(window.window, glfw.MOUSE_BUTTON_MIDDLE) == glfw.PRESS) && !mbm_press {
-		mbm_press = true
+	if (glfw.GetMouseButton(window.window, glfw.MOUSE_BUTTON_MIDDLE) == glfw.PRESS) && !MBM_PRESS {
+		MBM_PRESS = true
 		hit_ray := create_lvo_hitray(LVO_WORLD, window.camera.rotation, window.camera.position)
 		for hit_ray.distance < HIT_RANGE {
 			step := step_lvo_hitray(&hit_ray, proc(cblock: la.Vector3f32, nblock: la.Vector3f32) {
@@ -130,8 +115,8 @@ get_mouse_bt_input :: proc(window: ^LVO_Window) {
 		}
 	}
 	if (glfw.GetMouseButton(window.window, glfw.MOUSE_BUTTON_MIDDLE) == glfw.RELEASE) &&
-	   mbm_press {
-		mbm_press = false
+	   MBM_PRESS {
+		MBM_PRESS = false
 	}
 }
 
@@ -171,7 +156,7 @@ create_lvo_window :: proc(width, height: int, title: string) -> LVO_Window {
 	fmt.println("[LVO] Raw mouse input enabled")
 	// glfw.SetInputMode(window.window, glfw.CURSOR, glfw.CURSOR_DISABLED)
 
-	cursor_captured = false
+	CURSOR_CAPTURED = false
 
 	gl.Enable(gl.MULTISAMPLE)
 	gl.Enable(gl.DEPTH_TEST)
@@ -195,12 +180,12 @@ create_lvo_window :: proc(width, height: int, title: string) -> LVO_Window {
 
 @(private = "file")
 update :: proc(win: ^LVO_Window) {
-	if !cursor_captured {
+	if !CURSOR_CAPTURED {
 		win.camera.input = {0.0, 0.0, 0.0}
 	}
 
 	update_cursor_position(win)
-	win.camera.input = camera_temp_input
+	win.camera.input = CAMERA_TEMP_INPUT
 	update_lvo_camera(&win.camera, win.dt)
 	update_lvo_camera_matrices(&win.camera)
 

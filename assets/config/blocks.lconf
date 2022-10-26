@@ -8,3 +8,4 @@ planks; cube; opaque; all planks
 log; cube; opaque; top log_y; bottom log_y; sides log_side
 rose; plant; transparent; all red_rose
 daisy; plant; transparent; all yellow_flower
+diamond_block; cube; opaque; all diamond_block

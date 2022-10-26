@@ -3,10 +3,6 @@ package lvo
 import la "core:math/linalg"
 import "core:slice"
 
-SUBCHUNK_WIDTH :: 4
-SUBCHUNK_HEIGHT :: 4
-SUBCHUNK_LENGTH :: 4
-
 LVO_Subchunk :: struct {
 	parent:              ^LVO_Chunk,
 	world:               ^LVO_World,
@@ -109,29 +105,29 @@ update_lvo_subchunk_mesh :: proc(subchunk: ^LVO_Subchunk) {
 						f32(lz)
 					if block_type.is_cube {
 						if !is_lvo_world_block_opaque(
-							subchunk.world,
-							{x + 1.0, y, z},
-						) {add_face(0, subchunk, block_type, x, y, z)}
+							   subchunk.world,
+							   {x + 1.0, y, z},
+						   ) {add_face(0, subchunk, block_type, x, y, z)}
 						if !is_lvo_world_block_opaque(
-							subchunk.world,
-							{x - 1.0, y, z},
-						) {add_face(1, subchunk, block_type, x, y, z)}
+							   subchunk.world,
+							   {x - 1.0, y, z},
+						   ) {add_face(1, subchunk, block_type, x, y, z)}
 						if !is_lvo_world_block_opaque(
-							subchunk.world,
-							{x, y + 1.0, z},
-						) {add_face(2, subchunk, block_type, x, y, z)}
+							   subchunk.world,
+							   {x, y + 1.0, z},
+						   ) {add_face(2, subchunk, block_type, x, y, z)}
 						if !is_lvo_world_block_opaque(
-							subchunk.world,
-							{x, y - 1.0, z},
-						) {add_face(3, subchunk, block_type, x, y, z)}
+							   subchunk.world,
+							   {x, y - 1.0, z},
+						   ) {add_face(3, subchunk, block_type, x, y, z)}
 						if !is_lvo_world_block_opaque(
-							subchunk.world,
-							{x, y, z + 1.0},
-						) {add_face(4, subchunk, block_type, x, y, z)}
+							   subchunk.world,
+							   {x, y, z + 1.0},
+						   ) {add_face(4, subchunk, block_type, x, y, z)}
 						if !is_lvo_world_block_opaque(
-							subchunk.world,
-							{x, y, z - 1.0},
-						) {add_face(5, subchunk, block_type, x, y, z)}
+							   subchunk.world,
+							   {x, y, z - 1.0},
+						   ) {add_face(5, subchunk, block_type, x, y, z)}
 					} else {
 						for i in 0 ..= len(block_type.vertex_positions) - 1 {
 							add_face(auto_cast i, subchunk, block_type, x, y, z)

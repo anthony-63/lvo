@@ -5,10 +5,6 @@ import la "core:math/linalg"
 import "core:math"
 import "core:slice"
 
-CHUNK_WIDTH :: 16
-CHUNK_HEIGHT :: 16
-CHUNK_LENGTH :: 16
-
 LVO_Chunk :: struct {
 	chunk_position:          la.Vector3f32,
 	position:                la.Vector3f32,

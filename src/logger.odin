@@ -4,8 +4,6 @@ import "core:time"
 import "core:strings"
 import "core:fmt"
 
-LVO_LOG_FILE: string
-
 setup_lvo_logger :: proc(log_file: string) {
 	string_builder := strings.builder_make()
 	time_ := time.now()
