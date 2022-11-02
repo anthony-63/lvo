@@ -95,7 +95,9 @@ update_lvo_chunk_at_position :: proc(chunk: ^LVO_Chunk, position: la.Vector3f32)
 		math.floor(clz / SUBCHUNK_LENGTH)
 
 	update_lvo_subchunk_mesh(chunk.subchunks[{sx, sy, sz}])
-
+	if chunk.subchunks[{sx, sy, sz}].re_update == true {
+		update_lvo_subchunk_mesh(chunk.subchunks[{sx, sy, sz}])
+	}
 	if lx == SUBCHUNK_WIDTH - 1 {
 		try_update_subchunk_mesh(chunk, {sx + 1, sy, sz})
 	}

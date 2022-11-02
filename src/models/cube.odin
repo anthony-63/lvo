@@ -3,6 +3,7 @@ package lvo_models
 LVO_CUBE_MODEL :: LVO_Model {
 	is_cube = true,
 	transparent = false,
+	colliders = {{{-0.5, -0.5, -0.5}, {0.5, 0.5, 0.5}}},
 	vertices = {
 		{0.5, 0.5, 0.5, 0.5, -0.5, 0.5, 0.5, -0.5, -0.5, 0.5, 0.5, -0.5},
 		{-0.5, 0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, 0.5, -0.5, 0.5, 0.5},

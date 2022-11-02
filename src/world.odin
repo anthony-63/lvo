@@ -4,6 +4,8 @@ import la "core:math/linalg"
 import "core:math"
 import "core:math/rand"
 import "core:fmt"
+import "core:time"
+import noise "core:math/noise"
 
 LVO_World :: struct {
 	texture_manager: LVO_Texture_Manager,
@@ -44,28 +46,28 @@ create_lvo_world :: proc() -> ^LVO_World {
 	lvo_log("Loading blocks.lconf...")
 	parser := create_lvo_config_parser(&world.texture_manager)
 	world.block_types = parse_lconf_file(&parser, "blocks.lconf")
+	now := time.now()
+	seed := now._nsec
+	lvo_log("Using seed:", seed)
 
-	for x in 0 ..= 7 {
-		for z in 0 ..= 7 {
+	for x in 0 ..= WORLD_SIZE / CHUNK_WIDTH - 1 {
+		for z in 0 ..= WORLD_SIZE / CHUNK_LENGTH - 1 {
 			chunk_position: la.Vector3f32 = {f32(x) - 4, -1, f32(z) - 4}
 			current_chunk := create_lvo_chunk(world, chunk_position)
 			for i in 0 ..= CHUNK_WIDTH - 1 {
-				for j in 0 ..= CHUNK_HEIGHT - 1 {
-					for k in 0 ..= CHUNK_LENGTH - 1 {
-						block_choice: i32 = 0
-						if j == 15 {
-							block_choice = rand.choice(
-								[]i32{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 10},
-							)
-						} else if j == 14 {
-							block_choice = 2
-						} else if j > 12 {
-							block_choice = 4
-						} else {
+				for k in 0 ..= CHUNK_LENGTH - 1 {
+					y := generate_lvo_mountains(seed, i, k, x, z)
+					for j in 0 ..= y {
+						block_choice: i32 = 2
+						if j > 25 {
+							block_choice = 11
+						}
+						if j < 3 {
 							block_choice = 5
 						}
 						current_chunk.blocks[i][j][k] = block_choice
 					}
+
 				}
 			}
 			world.chunks[chunk_position] = current_chunk

@@ -14,6 +14,7 @@ LVO_Subchunk :: struct {
 	mesh_shading_values: [dynamic]f32,
 	mesh_indices:        [dynamic]i32,
 	mesh_index_counter:  i32,
+	re_update:           b32,
 }
 
 create_lvo_subchunk :: proc(
@@ -73,6 +74,7 @@ add_face :: proc(face: i32, subchunk: ^LVO_Subchunk, block_type: LVO_Block_Type,
 }
 
 update_lvo_subchunk_mesh :: proc(subchunk: ^LVO_Subchunk) {
+	subchunk.re_update = false
 	subchunk.mesh_vertices = {}
 	subchunk.mesh_tex_coords = {}
 	subchunk.mesh_shading_values = {}
@@ -91,6 +93,20 @@ update_lvo_subchunk_mesh :: proc(subchunk: ^LVO_Subchunk) {
 					int(subchunk.lposition.z) +
 					lz
 				block_number := subchunk.parent.blocks[plx][ply][plz]
+				if block_number == 2 {
+
+					if subchunk.parent.blocks[plx][ply + 1][plz] != 0 {
+						block_number = 4
+					}
+
+
+				}
+				if block_number == 9 || block_number == 10 {
+					if subchunk.parent.blocks[plx][ply - 1][plz] == 0 {
+						block_number = 0
+					}
+				}
+
 				if block_number != 0 {
 					block_type := subchunk.world.block_types[block_number]
 					assert(len(block_type.vertex_positions) > 1)

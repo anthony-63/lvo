@@ -23,7 +23,7 @@ create_lvo_config_parser :: proc(texture_manager: ^LVO_Texture_Manager) -> LVO_C
 
 @(private = "file")
 parse_lconf_line :: proc(cfg_parser: ^LVO_Config_Parser, line: string) -> LVO_Block_Type {
-	tokens := strings.split(line, "; ")
+	tokens := strings.split(line, ", ")
 	name := ""
 	textures: map[string]string = {}
 	model: models.LVO_Model

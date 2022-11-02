@@ -4,7 +4,6 @@ out vec4 fragment_color;
 
 uniform sampler2DArray texture_sampler;
 
-in vec3 position_pass;
 in vec3 tex_coord_pass;
 in float shading_value_pass;
 

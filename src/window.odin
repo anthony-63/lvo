@@ -16,7 +16,7 @@ LVO_Window :: struct {
 	dt:                                             f32,
 	last:                                           f32,
 	shader:                                         LVO_Shader,
-	camera:                                         LVO_Camera,
+	player:                                         LVO_Player,
 	mouse_dx, mouse_dy, last_mouse_x, last_mouse_y: f32,
 }
 
@@ -51,6 +51,12 @@ key_callback :: proc "c" (window: glfw.WindowHandle, key, scancode, action, mods
 		CAMERA_TEMP_INPUT.y += input
 	case glfw.KEY_LEFT_SHIFT:
 		CAMERA_TEMP_INPUT.y -= input
+	case glfw.KEY_LEFT_CONTROL:
+		if action == glfw.PRESS {
+			CAMERA_TEMP_SPEED = SPRINTING_SPEED
+		} else if action == glfw.RELEASE {
+			CAMERA_TEMP_SPEED = WALKING_SPEED
+		}
 	}
 }
 
@@ -71,12 +77,20 @@ update_cursor_position :: proc(window: ^LVO_Window) {
 get_mouse_bt_input :: proc(window: ^LVO_Window) {
 	if (glfw.GetMouseButton(window.window, glfw.MOUSE_BUTTON_LEFT) == glfw.PRESS) && !MBL_PRESS {
 		MBL_PRESS = true
-		hit_ray := create_lvo_hitray(LVO_WORLD, window.camera.rotation, window.camera.position)
+		hit_ray := create_lvo_hitray(
+			LVO_WORLD,
+			window.player.entity.rotation,
+			{
+				window.player.entity.position.x,
+				window.player.entity.position.y + window.player.eye_level,
+				window.player.entity.position.z,
+			},
+		)
 		for hit_ray.distance < HIT_RANGE {
 			step := step_lvo_hitray(&hit_ray, proc(cblock: la.Vector3f32, nblock: la.Vector3f32) {
-				lvo_log("Breaking block: ", cblock)
-				set_lvo_world_block(LVO_WORLD, nblock, 0)
-			})
+					lvo_log("Breaking block: ", cblock)
+					set_lvo_world_block(LVO_WORLD, nblock, 0)
+				})
 			if step {
 				break
 			}
@@ -87,12 +101,20 @@ get_mouse_bt_input :: proc(window: ^LVO_Window) {
 	}
 	if (glfw.GetMouseButton(window.window, glfw.MOUSE_BUTTON_RIGHT) == glfw.PRESS) && !MBR_PRESS {
 		MBR_PRESS = true
-		hit_ray := create_lvo_hitray(LVO_WORLD, window.camera.rotation, window.camera.position)
+		hit_ray := create_lvo_hitray(
+			LVO_WORLD,
+			window.player.entity.rotation,
+			{
+				window.player.entity.position.x,
+				window.player.entity.position.y + window.player.eye_level,
+				window.player.entity.position.z,
+			},
+		)
 		for hit_ray.distance < HIT_RANGE {
 			step := step_lvo_hitray(&hit_ray, proc(cblock: la.Vector3f32, nblock: la.Vector3f32) {
-				lvo_log("Placing block: ", cblock)
-				set_lvo_world_block(LVO_WORLD, cblock, HOLDING)
-			})
+					lvo_log("Placing block: ", cblock)
+					set_lvo_world_block(LVO_WORLD, cblock, HOLDING)
+				})
 			if step {
 				break
 			}
@@ -103,12 +125,20 @@ get_mouse_bt_input :: proc(window: ^LVO_Window) {
 	}
 	if (glfw.GetMouseButton(window.window, glfw.MOUSE_BUTTON_MIDDLE) == glfw.PRESS) && !MBM_PRESS {
 		MBM_PRESS = true
-		hit_ray := create_lvo_hitray(LVO_WORLD, window.camera.rotation, window.camera.position)
+		hit_ray := create_lvo_hitray(
+			LVO_WORLD,
+			window.player.entity.rotation,
+			{
+				window.player.entity.position.x,
+				window.player.entity.position.y + window.player.eye_level,
+				window.player.entity.position.z,
+			},
+		)
 		for hit_ray.distance < HIT_RANGE {
 			step := step_lvo_hitray(&hit_ray, proc(cblock: la.Vector3f32, nblock: la.Vector3f32) {
-				HOLDING = get_lvo_world_block_number(LVO_WORLD, nblock)
-				lvo_log("Holding block id: ", HOLDING)
-			})
+					HOLDING = get_lvo_world_block_number(LVO_WORLD, nblock)
+					lvo_log("Holding block id: ", HOLDING)
+				})
 			if step {
 				break
 			}
@@ -164,6 +194,7 @@ create_lvo_window :: proc(width, height: int, title: string) -> LVO_Window {
 
 	gl.Enable(gl.CULL_FACE)
 
+	lvo_log("Loading world...")
 	LVO_WORLD = create_lvo_world()
 	lvo_log("Created world")
 
@@ -171,30 +202,33 @@ create_lvo_window :: proc(width, height: int, title: string) -> LVO_Window {
 	lvo_log("Loaded shaders")
 
 	use_lvo_shader(window.shader)
-	fmt.println("[LVO] Using shaders")
-	window.camera = create_lvo_camera(window.shader, width, height, SENSITIVITY, SPEED)
-	fmt.println("[LVO] Created camera")
-
+	lvo_log("Using shaders")
+	window.player = create_lvo_player(LVO_WORLD, window.shader, width, height)
+	lvo_log("Created player")
 	return window
 }
 
 @(private = "file")
 update :: proc(win: ^LVO_Window) {
 	if !CURSOR_CAPTURED {
-		win.camera.input = {0.0, 0.0, 0.0}
+		win.player.input = {0.0, 0.0, 0.0}
 	}
 
 	update_cursor_position(win)
-	win.camera.input = CAMERA_TEMP_INPUT
-	update_lvo_camera(&win.camera, win.dt)
-	update_lvo_camera_matrices(&win.camera)
+	win.player.input = CAMERA_TEMP_INPUT
+	win.player.target_speed = CAMERA_TEMP_SPEED
+	update_lvo_player(&win.player, win.dt)
+	update_lvo_player_matrices(&win.player)
 
 	win.dt = f32(glfw.GetTime()) - win.last
 	win.last = f32(glfw.GetTime())
 
-	win.camera.rotation.x += win.mouse_dx * SENSITIVITY
-	win.camera.rotation.y += win.mouse_dy * SENSITIVITY
-	win.camera.rotation.y = max(-math.TAU / 4, min(math.TAU / 4, win.camera.rotation.y))
+	win.player.entity.rotation.x += win.mouse_dx * SENSITIVITY
+	win.player.entity.rotation.y += win.mouse_dy * SENSITIVITY
+	win.player.entity.rotation.y = max(
+		-math.TAU / 4,
+		min(math.TAU / 4, win.player.entity.rotation.y),
+	)
 
 	win.mouse_dx = 0
 	win.mouse_dy = 0
@@ -213,7 +247,7 @@ draw :: proc(win: ^LVO_Window) {
 	)
 	gl.Uniform1i(sampler_location, 0)
 
-	gl.ClearColor(0.1, 0.2, 0.3, 1.0)
+	gl.ClearColor(0.0, 0.0, 0.0, 1.0)
 	gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 	draw_lvo_world(LVO_WORLD)
 }

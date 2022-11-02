@@ -3,12 +3,15 @@ package lvo
 import "core:fmt"
 import "core:io"
 import "core:slice"
+import la "core:math/linalg"
 import "models"
+
 
 LVO_Block_Type :: struct {
 	name:             string,
 	vertex_positions: [][]f32,
 	tex_coords:       [][]f32,
+	colliders:        []LVO_Collider,
 	shading_values:   [][]f32,
 	indices:          []i32,
 	transparent:      b32,
@@ -44,6 +47,7 @@ create_lvo_block_type :: proc(
 		vertex_positions = make([][]f32, len(model.vertices)),
 		tex_coords       = make([][]f32, len(model.tex_coords)),
 		shading_values   = make([][]f32, len(model.shading)),
+		colliders        = make([]LVO_Collider, len(model.colliders)),
 		transparent      = model.transparent,
 		is_cube          = model.is_cube,
 	}
@@ -55,6 +59,9 @@ create_lvo_block_type :: proc(
 	}
 	for inner, i in model.shading {
 		block_type.shading_values[i] = slice.clone(inner)
+	}
+	for inner, i in model.colliders {
+		block_type.colliders[i] = create_lvo_collider(inner[0], inner[1])
 	}
 
 	failed := false
