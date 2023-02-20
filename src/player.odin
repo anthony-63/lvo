@@ -3,6 +3,7 @@ package lvo
 import la "core:math/linalg"
 import "core:math"
 import "vendor:glfw"
+import "core:fmt"
 
 LVO_Player :: struct {
 	width, height: f32,
@@ -47,7 +48,10 @@ update_lvo_player :: proc(player: ^LVO_Player, dt: f32) {
 		player.entity.velocity.x = math.cos(angle) * player.speed
 		player.entity.velocity.z = math.sin(angle) * player.speed
 	}
+	
 	update_lvo_entity(player.entity, dt)
+	// lvo_log("Player location: ", player.entity.position)
+	// lvo_log("Player velocity: ", player.entity.velocity)
 }
 
 update_lvo_player_matrices :: proc(player: ^LVO_Player) {

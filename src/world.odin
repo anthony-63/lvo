@@ -58,10 +58,10 @@ create_lvo_world :: proc() -> ^LVO_World {
 				for k in 0 ..= CHUNK_LENGTH - 1 {
 					y := generate_lvo_mountains(seed, i, k, x, z)
 					for j in 0 ..= y {
-						block_choice: i32 = 2
+						block_choice: i32 = 3
 						if j > 25 {
 							block_choice = 11
-						}
+						} 
 						if j < 3 {
 							block_choice = 5
 						}

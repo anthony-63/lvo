@@ -8,6 +8,11 @@ LVO_Collider :: struct {
 	p2: la.Vector3f32,
 }
 
+LVO_PotentialCollision :: struct {
+	entry_time: f32,
+	normal: la.Vector3f32,
+}
+
 create_lvo_collider :: proc(pos1: la.Vector3f32 = {}, pos2: la.Vector3f32 = {}) -> LVO_Collider {
 	collider: LVO_Collider = {}
 
@@ -71,12 +76,12 @@ collide_lvo_collider :: proc(
 	if x_entry < 0 && y_entry < 0 && z_entry < 0 {
 		lvo_log("didnt collide")
 
-		return 1, {}
+		return 1, {2.0, 2.0, 2.0}
 	}
 	if x_entry > 1 || y_entry > 1 || z_entry > 1 {
 		lvo_log("didnt collide")
 
-		return 1, {}
+		return 1, {2.0, 2.0, 2.0}
 	}
 
 	entry := math.max(x_entry, y_entry, z_entry)
@@ -85,15 +90,13 @@ collide_lvo_collider :: proc(
 	if entry > exit {
 		lvo_log("didnt collide")
 
-		return 1, {}
+		return 1, {2.0, 2.0, 2.0}
 	}
 
-	nx := -1 if vx > 0 else 1
-	ny := -1 if vy > 0 else 1
-	nz := -1 if vz > 0 else 1
-	nx = nx if entry == x_entry else 0
-	ny = ny if entry == y_entry else 0
-	nz = nz if entry == z_entry else 0
+	nx := []int{0, -1 if vx > 0 else 1}[int(entry == x_entry)]
+	ny := []int{0, -1 if vy > 0 else 1}[int(entry == y_entry)]
+	nz := []int{0, -1 if vz > 0 else 1}[int(entry == z_entry)]
+	
 	lvo_log("collided")
 	return entry, {f32(nx), f32(ny), f32(nz)}
 }

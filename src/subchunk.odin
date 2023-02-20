@@ -94,15 +94,12 @@ update_lvo_subchunk_mesh :: proc(subchunk: ^LVO_Subchunk) {
 					lz
 				block_number := subchunk.parent.blocks[plx][ply][plz]
 				if block_number == 2 {
-
 					if subchunk.parent.blocks[plx][ply + 1][plz] != 0 {
 						block_number = 4
 					}
-
-
 				}
 				if block_number == 9 || block_number == 10 {
-					if subchunk.parent.blocks[plx][ply - 1][plz] == 0 {
+					if subchunk.parent.blocks[plx][ply][plz] == 0 {
 						block_number = 0
 					}
 				}
